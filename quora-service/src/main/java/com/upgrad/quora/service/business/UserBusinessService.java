@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class UserBusinessService {
@@ -75,6 +76,15 @@ public class UserBusinessService {
      */
     public Boolean isUserSessionValid(UserAuthEntity userAuthEntity) {
         // userAuthEntity will be non null only if token exists in DB, and logoutAt null indicates user has not logged out yet
-        return (userAuthEntity != null && userAuthEntity.getLogoutAt() == null);
+        if (userAuthEntity != null && userAuthEntity.getLogoutAt() == null
+                && userAuthEntity.getExpiresAt() != null) {
+            Long timeDifference = ChronoUnit.MILLIS.between(ZonedDateTime.now(), userAuthEntity.getExpiresAt());
+            // Negative timeDifference indicates an expired access token,
+            // difference should be with in the limit, token will be expired after 8 hours
+            return (timeDifference >= 0 && timeDifference <= EIGHT_HOURS_IN_MILLIS);
+        }
+
+        // Token expired or user already logged out or user never signed in before(may also be the case of invalid token)
+        return false;
     }
 }
