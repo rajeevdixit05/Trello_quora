@@ -107,18 +107,24 @@ public class UserBusinessService {
      * If it is expired or invalid, then throws back the exception asking the user to sign in
      * If the user session is active, then pulls the UUID of the user̥
      *
-     * @param authorization holds the access token for authenticating the user
+     * @param authorization holds the bearer access token for authenticating the user
      * @return uuid of the user
      * @throws SignOutRestrictedException if the access token is expired or user never signed in
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String getUserUUID(String authorization) throws SignOutRestrictedException {
-        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorization);
+        String[] bearerToken = authorization.split(QuoraUtil.BEARER_TOKEN);
+        // If Bearer Token prefix is missed, ignore and just use the authorization text
+        if (bearerToken != null && bearerToken.length > 1) {
+            authorization = bearerToken[1];
+        }
+        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(bearerToken[1]);
         if (isUserSessionValid(userAuthEntity)) {
             userAuthEntity.setLogoutAt(ZonedDateTime.now());
             userDao.updateUserAuthEntity(userAuthEntity);
             return userAuthEntity.getUuid();
         }
+
         throw new SignOutRestrictedException("SGR-001", "User is not Signed in");
     }
 
@@ -130,15 +136,6 @@ public class UserBusinessService {
      */
     public Boolean isUserSessionValid(UserAuthEntity userAuthEntity) {
         // userAuthEntity will be non null only if token exists in DB, and logoutAt null indicates user has not logged out yet
-        if (userAuthEntity != null && userAuthEntity.getLogoutAt() == null
-                && userAuthEntity.getExpiresAt() != null) {
-            Long timeDifference = ChronoUnit.MILLIS.between(ZonedDateTime.now(), userAuthEntity.getExpiresAt());
-            // Negative timeDifference indicates an expired access token,
-            // difference should be with in the limit, token will be expired after 8 hours
-            return (timeDifference >= 0 && timeDifference <= EIGHT_HOURS_IN_MILLIS);
-        }
-
-        // Token expired or user already logged out or user never signed in before(may also be the case of invalid token)
-        return false;
+        return (userAuthEntity != null && userAuthEntity.getLogoutAt() == null);
     }
 }
