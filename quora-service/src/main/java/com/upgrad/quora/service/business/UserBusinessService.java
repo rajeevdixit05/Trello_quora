@@ -60,7 +60,7 @@ public class UserBusinessService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String getUserUUID(String authorization) throws SignOutRestrictedException {
-        String[] bearerToken = authorization.split("Bearer ");
+        String[] bearerToken = authorization.split(QuoraUtil.BEARER_TOKEN);
         if (bearerToken != null && bearerToken.length > 1) {
             UserAuthEntity userAuthEntity = userDao.getUserAuthToken(bearerToken[1]);
             if (isUserSessionValid(userAuthEntity)) {
