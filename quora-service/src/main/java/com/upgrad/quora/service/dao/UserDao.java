@@ -1,6 +1,7 @@
 package com.upgrad.quora.service.dao;
 
 import com.upgrad.quora.service.entity.User;
+import com.upgrad.quora.service.entity.UserAuthEntity;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -38,7 +39,7 @@ public class UserDao {
         }
     }
     /**
-     * Retreives the user record matching with the username passed
+     * Retrieves the user record matching with the username passed
      *
      * @param email The email to match with the user record
      * @return The Found user matching with username, otherwise null
@@ -49,5 +50,29 @@ public class UserDao {
         } catch (NoResultException nre) {
             return null;
         }
+    }
+
+    /**
+     * Retrieves the user auth record matched with the access token passed
+     * The access token is the one generated at the time of login
+     *
+     * @param accessToken The Security accessToken generated at the time of Sign in
+     * @return The UserAuthEntity record matched with the accessToken
+     */
+    public UserAuthEntity getUserAuthToken(final String accessToken) {
+        try {
+            return entityManager.createNamedQuery("userAuthByAccessToken", UserAuthEntity.class).setParameter("accessToken", accessToken).getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
+    /**
+     * Updates the User Auth Entity, like logout times or tokens to the Database
+     *
+     * @param updatedUserAuthEntity The Entity object to be updated in the Database
+     */
+    public void updateUserAuthEntity(final UserAuthEntity updatedUserAuthEntity) {
+        entityManager.merge(updatedUserAuthEntity);
     }
 }
