@@ -47,6 +47,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
+
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
@@ -68,8 +69,6 @@
             <version>42.2.2</version>
         </dependency>
     </dependencies>
-
-
     <build>
         <pluginManagement>
             <plugins>
