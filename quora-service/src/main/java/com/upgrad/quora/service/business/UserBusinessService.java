@@ -77,5 +77,4 @@ public class UserBusinessService {
         // userAuthEntity will be non null only if token exists in DB, and logoutAt null indicates user has not logged out yet
         return (userAuthEntity != null && userAuthEntity.getLogoutAt() == null);
     }
-
 }
