@@ -26,6 +26,18 @@ public class UserDao {
     }
 
     /**
+     * This method is added to persist the authData in database
+     *
+     * @param userAuthEntity Contains user information who has signed in and the access token
+     * @return The userAuthEntity that is saved in data base
+     */
+    public UserAuthEntity createAuthToken(final UserAuthEntity userAuthEntity) {
+        entityManager.persist(userAuthEntity);
+        return userAuthEntity;
+    }
+
+
+    /**
      * Retreives the user record matching with the username passed
      *
      * @param username The username to match with the user record
