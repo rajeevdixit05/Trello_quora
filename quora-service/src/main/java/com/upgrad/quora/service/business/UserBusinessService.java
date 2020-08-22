@@ -5,6 +5,7 @@ import com.upgrad.quora.service.entity.User;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
+import com.upgrad.quora.service.util.QuoraUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -53,17 +54,20 @@ public class UserBusinessService {
      * If it is expired or invalid, then throws back the exception asking the user to sign in
      * If the user session is active, then pulls the UUID of the user̥
      *
-     * @param authorization holds the access token for authenticating the user
+     * @param authorization holds the bearer access token for authenticating the user
      * @return uuid of the user
      * @throws SignOutRestrictedException if the access token is expired or user never signed in
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String getUserUUID(String authorization) throws SignOutRestrictedException {
-        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorization);
-        if (isUserSessionValid(userAuthEntity)) {
-            userAuthEntity.setLogoutAt(ZonedDateTime.now());
-            userDao.updateUserAuthEntity(userAuthEntity);
-            return userAuthEntity.getUuid();
+        String[] bearerToken = authorization.split("Bearer ");
+        if (bearerToken != null && bearerToken.length > 1) {
+            UserAuthEntity userAuthEntity = userDao.getUserAuthToken(bearerToken[1]);
+            if (isUserSessionValid(userAuthEntity)) {
+                userAuthEntity.setLogoutAt(ZonedDateTime.now());
+                userDao.updateUserAuthEntity(userAuthEntity);
+                return userAuthEntity.getUuid();
+            }
         }
         throw new SignOutRestrictedException("SGR-001", "User is not Signed in");
     }
@@ -75,15 +79,13 @@ public class UserBusinessService {
      * @return true if the token exists in the DB and user is not logged out, false otherwise
      */
     public Boolean isUserSessionValid(UserAuthEntity userAuthEntity) {
-        // userAuthEntity will be non null only if token exists in DB, and logoutAt null indicates user has not logged out yet
         if (userAuthEntity != null && userAuthEntity.getLogoutAt() == null
                 && userAuthEntity.getExpiresAt() != null) {
             Long timeDifference = ChronoUnit.MILLIS.between(ZonedDateTime.now(), userAuthEntity.getExpiresAt());
             // Negative timeDifference indicates an expired access token,
             // difference should be with in the limit, token will be expired after 8 hours
-            return (timeDifference >= 0 && timeDifference <= EIGHT_HOURS_IN_MILLIS);
+            return (timeDifference >= 0 && timeDifference <= QuoraUtil.EIGHT_HOURS_IN_MILLIS);
         }
-
         // Token expired or user already logged out or user never signed in before(may also be the case of invalid token)
         return false;
     }
