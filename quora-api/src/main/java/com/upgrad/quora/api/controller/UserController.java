@@ -21,6 +21,14 @@ public class UserController {
     @Autowired
     private UserBusinessService userBusinessService;
 
+    /**
+     * This method registers a user with all the details provided and handles the
+     * Scenario when user provides empty or invalid username/email and throws an error message
+     *
+     * @param signupUserRequest Holds all the details keyed in by the user at the time of Signup
+     * @return UUID of the registered user for further login
+     * @throws SignUpRestrictedException if the user provides invalid username/email
+     */
     @RequestMapping(method = RequestMethod.POST, path = "/user/signup", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SignupUserResponse> signUp(final SignupUserRequest signupUserRequest) throws SignUpRestrictedException {
         final User user = new User();
