@@ -118,7 +118,7 @@ public class UserBusinessService {
         if (bearerToken != null && bearerToken.length > 1) {
             authorization = bearerToken[1];
         }
-        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(bearerToken[1]);
+        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorization);
         if (isUserSessionValid(userAuthEntity)) {
             userAuthEntity.setLogoutAt(ZonedDateTime.now());
             userDao.updateUserAuthEntity(userAuthEntity);
