@@ -46,7 +46,6 @@ public class QuestionDao {
         entityManager.remove(question);
     }
 
-
     /**
      * Retrieves all the questions present in the Database question table and returns as a list
      *

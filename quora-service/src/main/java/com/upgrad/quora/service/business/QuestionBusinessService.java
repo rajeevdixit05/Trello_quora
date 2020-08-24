@@ -140,5 +140,4 @@ public class QuestionBusinessService {
         }
         throw new AuthorizationFailedException("ATHR-003", "Only the question owner or admin can delete the question");
     }
-
 }
