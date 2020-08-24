@@ -75,7 +75,7 @@ public class AnswerController {
         return new ResponseEntity<AnswerResponse>(answerResponse, HttpStatus.CREATED);
     }
 
-}
+
 
     /**
      * This method is used to delete the question. Note,
