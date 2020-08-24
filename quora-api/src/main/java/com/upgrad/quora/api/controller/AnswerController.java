@@ -97,5 +97,28 @@ public class AnswerController {
         answerResponse.id(answerUUID).status("ANSWER DELETED");
         return new ResponseEntity<AnswerResponse>(answerResponse, HttpStatus.OK);
     }
+    /**
+     * This method is used to edit the content of a specfic answer in a database
+     * Note,only the owner of the answer can edit the answer
+     *
+     * @param answerId          Is the uuid of the answer that needed to be edited
+     * @param authorization     holds the Bearer access token for authenticating the user.
+     * @param answerEditRequest Is uuid of the edited answer and message 'ANSWER EDITED' in the JSON response with the corresponding HTTP status.
+     * @return answer uuid with the message 'ANSWER EDITED'
+     * @throws AnswerNotFoundException      If answer with uuid which is to be edited does not exist in the database
+     * @throws AuthorizationFailedException If access token does not exit : if user has signed out : if non-owner tries to edit
+     */
+    @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}")
+    public ResponseEntity<AnswerEditResponse> editAnswerContent(
+            @PathVariable("answerId") final String answerId,
+            @RequestHeader("authorization") final String authorization,
+            final AnswerEditRequest answerEditRequest)
+            throws AnswerNotFoundException, AuthorizationFailedException {
+        final Answer answer = new Answer();
+        answer.setAns(answerEditRequest.getContent());
+        final Answer editAnswerEntity = answerBusinessService.editAnswerContent(answer, answerId, authorization);
+        AnswerEditResponse answerEditResponse = new AnswerEditResponse().id(editAnswerEntity.getUuid()).status("ANSWER EDITED");
+        return new ResponseEntity<AnswerEditResponse>(answerEditResponse, HttpStatus.OK);
+    }
 }
 
