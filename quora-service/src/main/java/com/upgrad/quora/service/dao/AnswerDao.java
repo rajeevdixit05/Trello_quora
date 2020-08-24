@@ -14,6 +14,16 @@ public class AnswerDao {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Saves the answer for the question
+     *
+     * @param answerEntity answer for the question
+     * @return answer for the question
+     */
+    public Answer createAnswer(Answer answerEntity) {
+        entityManager.persist(answerEntity);
+        return answerEntity;
+    }
 
     /**
      * This method is to get a answer by uuid from db
@@ -37,6 +47,15 @@ public class AnswerDao {
      */
     public List<Answer> getAllAnswersByQuestionId(Integer questionId) {
         return entityManager.createNamedQuery("answerByQuestionId", Answer.class).setParameter("questionId", questionId).getResultList();
+    }
+
+    /**
+     * This method is used to delete the answer record from db
+     *
+     * @param answer entity to be deleted from db
+     */
+    public void deleteAnswer(Answer answer) {
+        entityManager.remove(answer);
     }
 
 }
