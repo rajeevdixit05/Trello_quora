@@ -25,14 +25,14 @@ public class QuestionDao {
         return question;
     }
 
-    // Edit Question method (JPA merge state)
+
     /**
      * This method is update the existing question in DB
      *
      * @param question Is the question that needed to be saved in DB
      * @return The question that is updated in DB
      */
-    public Question updateQuestion(Question question) {
+    public Question updateQuestion(Question question) { // Edit Question method (JPA merge state)
         entityManager.merge(question);
         return question;
     }
