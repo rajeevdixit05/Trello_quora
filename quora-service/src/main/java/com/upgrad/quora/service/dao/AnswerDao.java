@@ -58,4 +58,15 @@ public class AnswerDao {
         entityManager.remove(answer);
     }
 
+    /**
+     * This method is used to update the answer content to db
+     *
+     * @param answer Is the answer that needed to be merged to db
+     * @return answer that is merged in db
+     */
+    public Answer updateAnswerContent(Answer answer) {
+        entityManager.merge(answer);
+        return answer;
+    }
+
 }
