@@ -99,4 +99,12 @@ public class UserDao {
             return null;
         }
     }
+    /**
+     * This method is used to delete a user from db
+     *
+     * @param user Is User that needed to be deleted from db
+     */
+    public void deleteUser(User user) {
+        entityManager.remove(user);
+    }
 }
