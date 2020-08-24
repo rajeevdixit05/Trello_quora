@@ -15,6 +15,17 @@ public class QuestionDao {
     private EntityManager entityManager;
 
     /**
+     * This method is store the newly created question in DB
+     *
+     * @param question Is the question that needed to be saved in DB
+     * @return The question that is saved in DB
+     */
+    public Question createQuestion(Question question) {
+        entityManager.persist(question);
+        return question;
+    }
+
+    /**
      * Retrieves all the questions present in the Database question table and returns as a list
      *
      * @return The list of questions present in the question table

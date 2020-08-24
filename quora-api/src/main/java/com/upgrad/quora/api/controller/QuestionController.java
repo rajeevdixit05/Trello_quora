@@ -1,22 +1,49 @@
 package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.QuestionDetailsResponse;
+import com.upgrad.quora.api.model.QuestionRequest;
+import com.upgrad.quora.api.model.QuestionResponse;
 import com.upgrad.quora.service.business.QuestionBusinessService;
 import com.upgrad.quora.service.entity.Question;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class QuestionController {
     @Autowired
     private QuestionBusinessService questionBusinessService;
+
+    /**
+     * This method is used to create a new question
+     * It uses Bearer token to validate the user
+     *
+     * @param questionRequest Contains all the attributes about the question
+     * @param authorization   Holds the Bearer access token for authenticating the user
+     * @return ResponseEntity with required question uuid and status
+     * @throws AuthorizationFailedException If the token is not present in DB or user already logged out
+     */
+    @RequestMapping(method = RequestMethod.POST, path = "/question/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionResponse> createQuestion(final QuestionRequest questionRequest,
+                                                           @RequestHeader("authorization") final String authorization)
+            throws AuthorizationFailedException {
+        final Question question = new Question();
+        question.setUuid(UUID.randomUUID().toString());
+        question.setContent(questionRequest.getContent());
+        Question createdQuestion = questionBusinessService.createNewQuestion(question, authorization);
+        QuestionResponse questionResponse = new QuestionResponse();
+        questionResponse.id(createdQuestion.getUuid()).status("QUESTION CREATED");
+        return new ResponseEntity<QuestionResponse>(questionResponse, HttpStatus.CREATED);
+    }
+
     /**
      * This method validates the user session and if active pulls all the questions from the database
      * Populates the uuid and content of each question posted earlier in the application and sends in the response

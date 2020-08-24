@@ -66,4 +66,24 @@ public class QuestionBusinessService {
         }
         return questionDao.findQuestionByUserId(user.getId());
     }
+    /**
+     * This method first validate the user calling the validate method is UserDao
+     * than this method stores the question in database if user is validated successfully
+     *
+     * @param question      this is question object that needed to be stored in database
+     * @param authorization holds the Bearer access token for authenticating the user
+     * @return the newly created question after saving in database
+     * @throws AuthorizationFailedException If the token is not present in DB or user already logged out
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Question createNewQuestion(Question question, String authorization) throws AuthorizationFailedException {
+
+        final UserAuthEntity userAuthEntity = userBusinessService.validateUserAuthentication(authorization,
+                "User is signed out.Sign in first to post a question");
+        question.setDate(ZonedDateTime.now());
+        question.setUser(userAuthEntity.getUser());
+        Question createdQuestion = questionDao.createQuestion(question);
+        return createdQuestion;
+
+    }
 }
