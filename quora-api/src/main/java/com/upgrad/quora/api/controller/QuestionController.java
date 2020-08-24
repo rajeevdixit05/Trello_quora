@@ -1,11 +1,10 @@
 package com.upgrad.quora.api.controller;
 
-import com.upgrad.quora.api.model.QuestionDetailsResponse;
-import com.upgrad.quora.api.model.QuestionRequest;
-import com.upgrad.quora.api.model.QuestionResponse;
+import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.QuestionBusinessService;
 import com.upgrad.quora.service.entity.Question;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -97,5 +96,28 @@ public class QuestionController {
             allQuesDetailsResponse.add(questionDetailsResponse);
         }
         return new ResponseEntity<List<QuestionDetailsResponse>>(allQuesDetailsResponse, HttpStatus.OK);
+    }
+
+    /**
+     * This method is used to edit a question that has been posted by a user. Note, only the owner of the
+     * question can edit the question.
+     *
+     * @param questionId    for the question which needs to be edited.
+     * @param authorization holds the Bearer access token for authenticating the user.
+     * @return uuid of the edited question and message 'QUESTION EDITED' in the JSON response with the corresponding HTTP status.
+     * @throws AuthorizationFailedException : if access token does not exit : if user has signed out : if non-owner tries to edit
+     * @throws InvalidQuestionException     : if question with uuid which is to be edited does not exist in the database
+     */
+    @RequestMapping(method = RequestMethod.PUT, path = "/question/edit/{questionId}")
+    public ResponseEntity<QuestionEditResponse> editQuestionContent(
+            @PathVariable("questionId") final String questionId,
+            @RequestHeader("authorization") final String authorization,
+            final QuestionEditRequest questionEditRequest)
+            throws InvalidQuestionException, AuthorizationFailedException {
+        final Question question = new Question();
+        question.setContent(questionEditRequest.getContent());
+        final Question editQuestionEntity = questionBusinessService.editQuestionContent(question, questionId, authorization);
+        QuestionEditResponse questionEditResponse = new QuestionEditResponse().id(editQuestionEntity.getUuid()).status("QUESTION EDITED");
+        return new ResponseEntity<QuestionEditResponse>(questionEditResponse, HttpStatus.OK);
     }
 }
