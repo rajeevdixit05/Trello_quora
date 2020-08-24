@@ -49,4 +49,13 @@ public class AnswerDao {
         return entityManager.createNamedQuery("answerByQuestionId", Answer.class).setParameter("questionId", questionId).getResultList();
     }
 
+    /**
+     * This method is used to delete the answer record from db
+     *
+     * @param answer entity to be deleted from db
+     */
+    public void deleteAnswer(Answer answer) {
+        entityManager.remove(answer);
+    }
+
 }

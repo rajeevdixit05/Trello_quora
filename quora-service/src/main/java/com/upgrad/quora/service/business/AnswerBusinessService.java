@@ -5,8 +5,10 @@ import com.upgrad.quora.service.dao.QuestionDao;
 import com.upgrad.quora.service.entity.Answer;
 import com.upgrad.quora.service.entity.Question;
 import com.upgrad.quora.service.entity.UserAuthEntity;
+import com.upgrad.quora.service.exception.AnswerNotFoundException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.util.QuoraUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -73,5 +75,39 @@ public class AnswerBusinessService {
             throw new InvalidQuestionException("QUES-001", "The question with entered uuid whose details are to be seen does not exist");
         }
         return answerDao.getAllAnswersByQuestionId(question.getId());
+    }
+
+    /**
+     * This method validates Authorization for the user and returns the Id of the deleted answer
+     *
+     * @param answerId      UUid for particular answer
+     * @param authorization holds the Bearer access token for authenticating
+     * @return returns id of the answer
+     * @throws AuthorizationFailedException If the access token provided by the user does not exist in the database,
+     *                                      If the user has signed out, if the user who is not the owner of the answer
+     *                                      or the role of the user is not‘admin’ and tries to delete the answer
+     * @throws AnswerNotFoundException      If the answer with uuid which is to be deleted does not exist in the database
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String deleteAnswer(String answerId, String authorization)
+            throws AuthorizationFailedException, InvalidQuestionException, AnswerNotFoundException {
+        final UserAuthEntity userAuthEntity = userBusinessService.validateUserAuthentication(authorization,
+                "User is signed out.Sign in first to delete an answer");
+
+        Answer answer = answerDao.getAnswerByUUID(answerId);
+        // If the answer with uuid which is to be deleted does not exist in the database
+        if (answer == null) {
+            throw new AnswerNotFoundException("ANS-001", "Entered answer uuid does not exist");
+        }
+        if (QuoraUtil.ADMIN_ROLE.equalsIgnoreCase(userAuthEntity.getUser().getRole())
+                || answer.getUser().getId() == userAuthEntity.getUser().getId()) {
+            answerDao.deleteAnswer(answer);
+            return answer.getUuid();
+        }
+        /*
+         * Only the answer owner or admin can delete the answer. Therefore, if the user who is not the owner of the answer or the role of the user is ‘nonadmin’
+         * and tries to delete the answer throw "AuthorizationFailedException"
+         */
+        throw new AuthorizationFailedException("ATHR-003", "Only the answer owner or admin can delete the answer");
     }
 }

@@ -47,6 +47,7 @@ public class AnswerController {
         }
         return new ResponseEntity<List<AnswerDetailsResponse>>(answerDetailsResponseList, HttpStatus.OK);
     }
+
     /**
      * This method is used for the corresponding question which
      * is to be answered in the database
@@ -73,4 +74,28 @@ public class AnswerController {
         AnswerResponse answerResponse = new AnswerResponse().id(updatedAnswer.getUuid()).status("ANSWER CREATED");
         return new ResponseEntity<AnswerResponse>(answerResponse, HttpStatus.CREATED);
     }
+
 }
+
+    /**
+     * This method is used to delete the question. Note,
+     * only the owner of the answer or admin can delete the question
+     *
+     * @param answerId      It is the Uuid of answer to be deleted
+     * @param authorization holds the Bearer access token for authenticating the user.
+     * @return uuid of the deleted answer and message 'ANSWER DELETED' in the JSON response with the corresponding HTTP status.
+     * @throws AuthorizationFailedException If the access token provided by the user does not exist in the database,
+     *                                      If the user has signed out, if the user who is not the owner of the answer or the role of the user is ‘nonadmin’ and tries to delete the answer
+     * @throws AnswerNotFoundException      If the answer with uuid which is to be deleted does not exist in the database
+     */
+    @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}")
+    public ResponseEntity<AnswerResponse> deleteAnswer(
+            @PathVariable("answerId") final String answerId, @RequestHeader("authorization") final String authorization)
+            throws AuthorizationFailedException, AnswerNotFoundException, InvalidQuestionException {
+        String answerUUID = answerBusinessService.deleteAnswer(answerId, authorization);
+        final AnswerResponse answerResponse = new AnswerResponse();
+        answerResponse.id(answerUUID).status("ANSWER DELETED");
+        return new ResponseEntity<AnswerResponse>(answerResponse, HttpStatus.OK);
+    }
+}
+
