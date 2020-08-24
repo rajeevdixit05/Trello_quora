@@ -35,5 +35,19 @@ public class QuestionDao {
     public List<Question> findQuestionByUserId(Integer userId) {
         return entityManager.createNamedQuery("questionByUserId", Question.class).setParameter("userId", userId).getResultList();
     }
+
+    /**
+     * Retrieves question present in database by ID
+     *
+     * @return The question present in the question table
+     */
+    public Question getQuestionByUUID(String questionUUID) {
+        try {
+            return entityManager.createNamedQuery("questionByUUID", Question.class).setParameter("uuid", questionUUID).getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
 }
 
