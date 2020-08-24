@@ -5,10 +5,7 @@ import com.upgrad.quora.service.common.UnexpectedException;
 import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.User;
 import com.upgrad.quora.service.entity.UserAuthEntity;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
-import com.upgrad.quora.service.exception.AuthorizationFailedException;
-import com.upgrad.quora.service.exception.SignOutRestrictedException;
-import com.upgrad.quora.service.exception.SignUpRestrictedException;
+import com.upgrad.quora.service.exception.*;
 import com.upgrad.quora.service.util.QuoraUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -168,5 +165,29 @@ public class UserBusinessService {
             throw new AuthorizationFailedException("ATHR-002", athr002Message);
         }
         return userAuthEntity;
+    }
+
+    /**
+     * This Method is used to get User Details from the database.
+     *
+     * @param userUuid      user id to get details of specific user.
+     * @param authorization holds the Bearer access token for authenticating
+     * @return the user profile if the conditions are satisfied
+     * @throws AuthorizationFailedException If the access token provided by the user does not exist in the database,
+     *                                      If the user has signed out
+     * @throws UserNotFoundException        If the user with uuid whose profile is to be retrieved does not exist in the database
+     */
+    public User getUser(final String userUuid, final String authorization) throws AuthorizationFailedException, UserNotFoundException {
+        UserAuthEntity userAuthEntity = validateUserAuthentication(authorization,
+                "User is signed out.Sign in first to get user details");
+        User user = userDao.getUserByUUID(userUuid);
+        /**
+         * If the user with uuid whose profile is to be retrieved does not exist
+         * in the database, throw 'UserNotFoundException'
+         */
+        if (user == null) {
+            throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+        }
+        return user;
     }
 }
