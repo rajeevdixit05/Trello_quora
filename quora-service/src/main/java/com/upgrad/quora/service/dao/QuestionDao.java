@@ -24,4 +24,16 @@ public class QuestionDao {
         return allQuestions;
     }
 
+
+    /**
+     * Retrieves all the questions posted by a user matched with the userId field
+     * Here the userId is the Id attribute in User Entity
+     *
+     * @param userId The user id Id attribute of User Entity to pull the questions posted by that user
+     * @return The list of all questions posted by the matched user
+     */
+    public List<Question> findQuestionByUserId(Integer userId) {
+        return entityManager.createNamedQuery("questionByUserId", Question.class).setParameter("userId", userId).getResultList();
+    }
 }
+
